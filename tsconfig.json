@@ -1,5 +1,8 @@
 {
   "compilerOptions": {
+    "lib": ["es7"],
+    "declaration": true,
+    "esModuleInterop": false,
     "module": "commonjs",
     "moduleResolution": "node",
     "noImplicitAny": false,
@@ -8,15 +11,12 @@
     "allowSyntheticDefaultImports": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "target": "es2016",
+    "target": "ES2017",
     "sourceMap": true,
     "outDir": "./dist",
-    "rootDir": "./src",
     "baseUrl": "./",
-    "allowJs": true,
-    "resolveJsonModule": true
-  },
-  "exclude": [
-    "node_modules"
-  ]
+    "allowJs": false,
+    "resolveJsonModule": true,
+    "noUnusedLocals": true
+  }
 }

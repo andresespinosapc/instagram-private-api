@@ -1,8 +1,10 @@
 import 'reflect-metadata';
 
-export * from './core';
+export * from './core/client';
+export * from './core/entity';
+export * from './core/feed';
+export * from './entities';
+export * from './errors';
 export * from './feeds';
-export * from './helpers';
-
-// Legacy export. Will be removed in 1.0.0
-export const V1 = require('./v1');
+export * from './types';
+export * from './responses';

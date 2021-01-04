@@ -1,26 +1,42 @@
-import { plainToClass } from 'class-transformer';
-import { User } from '../models/user';
-import { Request } from '../core/request';
-import { AbstractFeed } from './abstract.feed';
+import { Expose, plainToClassFromExist } from 'class-transformer';
+import { Feed } from '../core/feed';
+import { AccountFollowingFeedResponse, AccountFollowingFeedResponseUsersItem } from '../responses';
 
-export class AccountFollowingFeed extends AbstractFeed<User> {
-  constructor(session, public accountId, public limit = Infinity) {
-    super(session);
+export class AccountFollowingFeed extends Feed<AccountFollowingFeedResponse, AccountFollowingFeedResponseUsersItem> {
+  searchSurface?: string;
+  order?: 'default' | 'date_followed_latest' | 'date_followed_earliest' = 'default';
+  query = '';
+  enableGroups = true;
+  includesHashtags = true;
+
+  id: number | string;
+  @Expose()
+  public nextMaxId: string;
+
+  set state(body: AccountFollowingFeedResponse) {
+    this.moreAvailable = !!body.next_max_id;
+    this.nextMaxId = body.next_max_id;
   }
 
-  async get() {
-    const data = await new Request(this.session)
-      .setMethod('GET')
-      .setResource('followingFeed', {
-        id: this.accountId,
-        maxId: this.getCursor(),
-        rankToken: this.rankToken,
-      })
-      .send();
-    this.moreAvailable = !!data.next_max_id;
-    if (this.moreAvailable) {
-      this.setCursor(data.next_max_id);
-    }
-    return plainToClass(User, data.users);
+  async request() {
+    const { body } = await this.client.request.send<AccountFollowingFeedResponse>({
+      url: `/api/v1/friendships/${this.id}/following/`,
+      qs: {
+        rank_token: this.rankToken,
+        max_id: this.nextMaxId,
+        search_surface: this.searchSurface,
+        order: this.order,
+        query: this.query,
+        enable_groups: this.enableGroups,
+        includes_hashtags: this.includesHashtags,
+      },
+    });
+    this.state = body;
+    return body;
+  }
+
+  async items() {
+    const body = await this.request();
+    return body.users.map(user => plainToClassFromExist(new AccountFollowingFeedResponseUsersItem(this.client), user));
   }
 }
